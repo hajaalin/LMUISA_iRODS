@@ -27,5 +27,5 @@ do
   sleep 1
 
   log=`basename $f`	
-  ../$f 2>&1  | tee $log.out
+  $f 2>&1  | tee $log.out
 done

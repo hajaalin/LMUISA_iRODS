@@ -1,6 +1,6 @@
 echo $0
 
-export input=experiment--2001_01_01_01_01_01
+export input=experiment--2001_01_01_01_01_06
 mkdir $input
 echo test > $input/test1.txt
 echo test > $input/test2.txt
