@@ -284,7 +284,8 @@ acPostProcForPut {
     } 
     
     if($userNameClient != "bisque" && $objPath like "/"++$rodsZoneProxy++"/home/\*/bisque_data/\*") {
-        acLog("BISQUE: inserting object"++$objPath);
+        acLog("BISQUE: inserting object "++$objPath);
+        acLog("BISQUE: tags "++*tags);
 	#       delay("<PLUSET>1s</PLUSET><EF>1s REPEAT UNTIL SUCCESS</EF>") {
         delay("<PLUSET>1s</PLUSET>") {
             #msiExecCmd("insert2bisque.py", '\"$objPath\" $userNameClient', "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
