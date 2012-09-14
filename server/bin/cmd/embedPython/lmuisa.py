@@ -126,25 +126,25 @@ def msiSetMatrixScreenerPlateData(image, resStr):
 
     irods.fillStrInMsParam(resStr, str(res))
 
-def msiGetMatrixScreenerProject(image, resStr):
+def msiGetMatrixScreenerProject(image, resStr,  rei):
     res = ''
     image = image.parseForStr()
     res += createProject(image)
     irods.fillStrInMsParam(resStr,  str(res))
 
-def msiGetMatrixScreenerExperiment(image, resStr):
+def msiGetMatrixScreenerExperiment(image, resStr,  rei):
     res = ''
     image = image.parseForStr()
     res += createExperiment(image)
     irods.fillStrInMsParam(resStr,  str(res))
 
-def msiGetMatrixScreenerWell(image, resStr):
+def msiGetMatrixScreenerWell(image, resStr,  rei):
     res = ''
     image = image.parseForStr()
     res += createWellCode(image)
     irods.fillStrInMsParam(resStr,  str(res))
 
-def msiGetMatrixScreenerField(image, resStr):
+def msiGetMatrixScreenerField(image, resStr,  rei):
     res = ''
     image = image.parseForStr()
     res += createFieldIndex(image)
