@@ -128,7 +128,7 @@ def msiGetMatrixScreenerField(image, resStr,  rei):
     res += createFieldIndex(image)
     irods.fillStrInMsParam(resStr,  str(res))
 
-def msiAVUs2BisqueTags(path, tags, rei):
+def msiAVUs2BisqueTags(path, tagsOut, rei):
     tags = ''
     conn = rei.getRsComm()
     f = iRodsOpen(rei.getRsComm(), path.parseForStr(), 'w')
@@ -140,7 +140,7 @@ def msiAVUs2BisqueTags(path, tags, rei):
         tags += tag
     
     print tags
-    irods.fillStrInMsParam(resStr,  str(tags))
+    irods.fillStrInMsParam(tagsOut,  str(tags))
 
 def msiLeica2Cellomics(inputColl, outputColl, resStr, rei):
     res = ''
