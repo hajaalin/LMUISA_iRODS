@@ -134,7 +134,13 @@ def msiAVUs2BisqueTags(path, tags, rei):
     f = iRodsOpen(rei.getRsComm(), path.parseForStr(), 'w')
     avus = f.getUserMetadata()
     print avus
-    irods.fillStrInMsParam(resStr,  str(res))
+    for avu in avus:
+        (a, v, u) = avu
+        tag = '<tag name="%s" value="%s">' % (a, v)
+        tags += tag
+    
+    print tags
+    irods.fillStrInMsParam(resStr,  str(tags))
 
 def msiLeica2Cellomics(inputColl, outputColl, resStr, rei):
     res = ''
@@ -329,3 +335,8 @@ print createExperiment(testname)
 print createWellCode(testname)
 print createFieldIndex(testname)
 
+avus = [('dataset', 'experiment--2011_04_20_07_15_22', ''), ('well', 'B01', ''), ('field', '00,00', ''), ('project', 'experiment--2011_04_20_07_15_22', '')]
+for avu in avus:
+    (a, v, u) = avu
+    tag = '<tag name="%s" value="%s">' % (a, v)
+    print tag
