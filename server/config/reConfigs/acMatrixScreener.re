@@ -14,11 +14,11 @@ acSetMatrixScreenerPlateData(*obj,*res) {
     msiGetObjectPath(*obj,*path,*status);
     
     msiPyInitialize;
+    msiLocalPython2("/opt/iRODS/iRODS_3.0/server/bin/cmd/embedPython/lmuisa.py","testH2","noRecursionTest",*inp,*res);
     msiLocalPython2("/opt/iRODS/iRODS_3.0/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerProject","noRecursionTest",*path,*project);
     msiLocalPython2("/opt/iRODS/iRODS_3.0/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerExperiment","noRecursionTest",*path,*experiment);
     msiLocalPython2("/opt/iRODS/iRODS_3.0/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerWellCode","noRecursionTest",*obj,*well);
     msiLocalPython2("/opt/iRODS/iRODS_3.0/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerFieldIndex","noRecursionTest",*obj,*field);
-    msiLocalPython2("/opt/iRODS/iRODS_3.0/server/bin/cmd/embedPython/lmuisa.py","testH2","noRecursionTest",*inp,*res);
     msiPyFinalize;
     
     msiAddKeyVal(*KVPairs,'project',*experiment);
@@ -28,3 +28,5 @@ acSetMatrixScreenerPlateData(*obj,*res) {
    
    msiAssociateKeyValuePairsToObj(*KVPairs,*obj,"-d");
 }
+
+
