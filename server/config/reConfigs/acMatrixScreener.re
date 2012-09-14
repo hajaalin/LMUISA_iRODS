@@ -12,6 +12,7 @@ acSetMatrixScreenerPlateData(*obj,*res) {
     
     # get the object path
     msiGetObjectPath(*obj,*path,*status);
+    acLog(*path);
     
     msiPyInitialize;
     msiLocalPython2("/opt/iRODS/iRODS_3.0/server/bin/cmd/embedPython/lmuisa.py","testH2","noRecursionTest",*inp,*res);
