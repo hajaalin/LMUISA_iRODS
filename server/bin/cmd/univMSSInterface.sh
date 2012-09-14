@@ -10,47 +10,62 @@
 # These functions need one or two input parameters which should be named $1 and $2.
 # If some of these functions are not implemented for your MSS, just let this function as it is.
 #
- 
+export LOG=/tmp/iRODS/univMSS.log
+
+#Set ARCHIVE to the archive hostname
+#export ARCHIVEHOST=biotek973.biocenter.helsinki.fi
+export ARCHIVEHOST=hippu.csc.fi
+export ARCHIVEDIR=ARCHIVE
+
+#Set ARCHIVEUSER to the username of the iRODS use on the archive host
+export ARCHIVEUSER=hajaalin
+
 # function for the synchronization of file $1 on local disk resource to file $2 in the MSS
 syncToArch () {
 	# <your command or script to copy from cache to MSS> $1 $2 
 	# e.g: /usr/local/bin/rfcp $1 rfioServerFoo:$2
-	return
+	echo /usr/bin/scp $1 ${ARCHIVEUSER}@${ARCHIVEHOST}:${ARCHIVEDIR}${2} >> $LOG
+	/usr/bin/scp $1 ${ARCHIVEUSER}@${ARCHIVEHOST}:${ARCHIVEDIR}${2}
 }
 
 # function for staging a file $1 from the MSS to file $2 on disk
 stageToCache () {
 	# <your command to stage from MSS to cache> $1 $2	
 	# e.g: /usr/local/bin/rfcp rfioServerFoo:$1 $2
-	return
+	echo /usr/bin/scp ${ARCHIVEUSER}@${ARCHIVEHOST}:${ARCHIVEDIR}${1} $2 >> $LOG
+	/usr/bin/scp ${ARCHIVEUSER}@${ARCHIVEHOST}:${ARCHIVEDIR}${1} $2
 }
 
 # function to create a new directory $1 in the MSS logical name space
 mkdir () {
 	# <your command to make a directory in the MSS> $1
 	# e.g.: /usr/local/bin/rfmkdir -p rfioServerFoo:$1
-	return
+	echo /usr/bin/ssh ${ARCHIVEUSER}@${ARCHIVEHOST} "mkdir -p ${ARCHIVEDIR}/${1}" >> $LOG
+	/usr/bin/ssh ${ARCHIVEUSER}@${ARCHIVEHOST} "mkdir -p ${ARCHIVEDIR}/${1}"
 }
 
 # function to modify ACLs $2 (octal) in the MSS logical name space for a given directory $1 
 chmod () {
 	# <your command to modify ACL> $1 $2
 	# e.g: /usr/local/bin/rfchmod $2 rfioServerFoo:$1
-	return
+	echo /usr/bin/ssh ${ARCHIVEUSER}@${ARCHIVEHOST} "chmod $2 ${ARCHIVEDIR}/$1" >> $LOG
+	/usr/bin/ssh ${ARCHIVEUSER}@${ARCHIVEHOST} "chmod $2 ${ARCHIVEDIR}/$1"
 }
 
 # function to remove a file $1 from the MSS
 rm () {
 	# <your command to remove a file from the MSS> $1
 	# e.g: /usr/local/bin/rfrm rfioServerFoo:$1
-	return
+	echo /usr/bin/ssh ${ARCHIVEUSER}@${ARCHIVEHOST} "rm  ${ARCHIVEDIR}/$1" >> $LOG
+	/usr/bin/ssh ${ARCHIVEUSER}@${ARCHIVEHOST} "rm  ${ARCHIVEDIR}/$1"
 }
 
 # function to rename a file $1 into $2 in the MSS
 mv () {
        # <your command to rename a file in the MSS> $1 $2
        # e.g: /usr/local/bin/rfrename rfioServerFoo:$1 rfioServerFoo:$2
-       return
+	echo /usr/bin/ssh ${ARCHIVEUSER}@${ARCHIVEHOST} "mv ${ARCHIVEDIR}/$1 ${ARCHIVEDIR}/$2" >> $LOG
+       /usr/bin/ssh ${ARCHIVEUSER}@${ARCHIVEHOST} "mv ${ARCHIVEDIR}/$1 ${ARCHIVEDIR}/$2"
 }
 
 # function to do a stat on a file $1 stored in the MSS
