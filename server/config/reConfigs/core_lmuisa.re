@@ -256,8 +256,10 @@ acPostProcForPut {
     #*tags = '<tag name="description" value="some text">';
     
     if ($objPath like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}/.*")  {
+        acSetMatrixScreenerPlateData($objPath,*res);
+
         # get real AVUs of the object, make into XML
-        acSetMatrixScreenerPlateData($objPath,*tags);
+        acAVUs2BisqueTags($objPath,*tags)
     }
 
     #if($rescName == "li1-tike1") {
@@ -286,7 +288,7 @@ acPostProcForPut {
 	#       delay("<PLUSET>1s</PLUSET><EF>1s REPEAT UNTIL SUCCESS</EF>") {
         delay("<PLUSET>1s</PLUSET>") {
             #msiExecCmd("insert2bisque.py", '\"$objPath\" $userNameClient', "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
-            msiExecCmd("insert2bisque_with_tags.py", '$objPath $userNameClient \"*tags\"', "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
+            msiExecCmd("insert2bisque_with_tags.py", '$objPath $userNameClient *tags', "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
             writeLine("serverLog","BISQUE: inserted object"++$objPath);
 	}
     }
