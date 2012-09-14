@@ -103,29 +103,6 @@ def createChannelCode(image):
     channel = result_c.group(1)
     channel = int(channel)
     return repr(channel)
-    
-
-def msiSetMatrixScreenerPlateData(image, resStr):
-    res = ''
-    
-    # irods connection
-    conn = rei.getRsComm()
- 
-    image = image.parseForStr()
-    res += image + '\n'
-    
-    well = createWellCode(image)
-    field = createFieldIndex(image)
-    
-    # this will take a long time...
-    # maybe better to just return the tag names?
-    f = iRodsOpen(conn, image, 'r')
-    f.addUserMetadata(TAG_DATASET, experiment)
-    f.addUserMetadata(TAG_WELL, well)
-    f.addUserMetadata(TAG_FIELD, field)
-
-    irods.fillStrInMsParam(resStr, str(res))
-
 
 def msiGetMatrixScreenerProject(image, resStr,  rei):
     res = ''
