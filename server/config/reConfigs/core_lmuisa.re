@@ -289,6 +289,7 @@ acPostProcForPut {
 	#       delay("<PLUSET>1s</PLUSET><EF>1s REPEAT UNTIL SUCCESS</EF>") {
         delay("<PLUSET>1s</PLUSET>") {
             #msiExecCmd("insert2bisque.py", '\"$objPath\" $userNameClient', "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
+            acLog("BISQUE: "++'$objPath $userNameClient *tags');
             msiExecCmd("insert2bisque_with_tags.py", '$objPath $userNameClient *tags', "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
             writeLine("serverLog","BISQUE: inserted object"++$objPath);
 	}
