@@ -17,7 +17,18 @@ acPostProcForCollCreate {
 }
 
 acPostProcForPut {
-    ON ($userNameClient != "bisque" && $objPath like "/LMUISA1_test/home/\*/bisque_data/\*") {
+    # default tags for testing
+    *tags = '<tag name="description" value="some text"';
+    
+    if ($objPath like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}/.*")  {
+        acSetMatrixScreenerPlateData($objPath,*res);
+        
+        # get real AVUs of the object, make into XML
+    }
+
+    if ($userNameClient != "bisque" && $objPath like "/LMUISA1_test/home/\*/bisque_data/\*") {
+    
+    
        writeLine("serverLog","BISQUE: inserting object"++$objPath);
 #       delay("<PLUSET>1s</PLUSET><EF>1s REPEAT UNTIL SUCCESS</EF>") {
        delay("<PLUSET>1s</PLUSET>") {
