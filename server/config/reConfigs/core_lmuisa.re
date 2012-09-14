@@ -255,7 +255,7 @@ acPostProcForPut {
     # default tags for testing
     #*tags = '<tag name="description" value="some text">';
     
-    if ($objPath like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}/.*")  {
+    if ($objPath like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}/.*tif")  {
         acSetMatrixScreenerPlateData($objPath,*res);
 
         # get real AVUs of the object, make into XML
