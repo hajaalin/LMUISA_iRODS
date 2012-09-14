@@ -256,9 +256,8 @@ acPostProcForPut {
     *tags = '<tag name="description" value="some text"';
     
     if ($objPath like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}/.*")  {
-        acSetMatrixScreenerPlateData($objPath,*res);
-        
         # get real AVUs of the object, make into XML
+        acSetMatrixScreenerPlateData($objPath,*tags);
     }
 
     #if($rescName == "li1-tike1") {
