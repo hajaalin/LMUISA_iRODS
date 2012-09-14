@@ -250,12 +250,21 @@ acSetMultiReplPerResc { }
 # msiSysMetaModify(expirytime,+0h)
 acPostProcForPut {
     acLog("acPostProcForPut: "++$objPath);	
-    msiSysMetaModify("expirytime","+0h");
+    #msiSysMetaModify("expirytime","+0h");
     
-    if($rescName == "li1-tike1") {
-        #acLog("acPostProcForPut: li1-tike1");
-        acModPhysPerm($filePath);
+    # default tags for testing
+    *tags = '<tag name="description" value="some text"';
+    
+    if ($objPath like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}/.*")  {
+        acSetMatrixScreenerPlateData($objPath,*res);
+        
+        # get real AVUs of the object, make into XML
     }
+
+    #if($rescName == "li1-tike1") {
+        #acLog("acPostProcForPut: li1-tike1");
+        #acModPhysPerm($filePath);
+    #}
     
     if($objPath like ("/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Data/\*")) {
         #acLog("acPostProcForPut: Data");
@@ -277,7 +286,8 @@ acPostProcForPut {
 	acLog("BISQUE: inserting object"++$objPath);
 	#       delay("<PLUSET>1s</PLUSET><EF>1s REPEAT UNTIL SUCCESS</EF>") {
         delay("<PLUSET>1s</PLUSET>") {
-            msiExecCmd("insert2bisque.py", '\"$objPath\" $userNameClient', "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
+            #msiExecCmd("insert2bisque.py", '\"$objPath\" $userNameClient', "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
+            msiExecCmd("insert2bisque_with_tags.py", '$objPath $userNameClient *tags', "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
             writeLine("serverLog","BISQUE: inserted object"++$objPath);
 	}
     }
