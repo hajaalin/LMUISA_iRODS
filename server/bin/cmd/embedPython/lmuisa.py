@@ -108,24 +108,28 @@ def msiGetMatrixScreenerProject(image, resStr,  rei):
     res = ''
     image = image.parseForStr()
     res += createProject(image)
+    print 'msiGetMatrixScreenerProject',  res
     irods.fillStrInMsParam(resStr,  str(res))
 
-def msiGetMatrixScreenerExperiment(image, resStr,  rei):
+def msiGetMatrixScreenerProject(image, resStr,  rei):
     res = ''
     image = image.parseForStr()
     res += createExperiment(image)
+    print 'msiGetMatrixScreenerProject',  res
     irods.fillStrInMsParam(resStr,  str(res))
 
 def msiGetMatrixScreenerWell(image, resStr,  rei):
     res = ''
     image = image.parseForStr()
     res += createWellCode(image)
+    print 'msiGetMatrixScreenerWell',  res
     irods.fillStrInMsParam(resStr,  str(res))
 
 def msiGetMatrixScreenerField(image, resStr,  rei):
     res = ''
     image = image.parseForStr()
     res += createFieldIndex(image)
+    print 'msiGetMatrixScreenerField',  res
     irods.fillStrInMsParam(resStr,  str(res))
 
 def msiAVUs2BisqueTags(path, tagsOut, rei):
@@ -134,13 +138,13 @@ def msiAVUs2BisqueTags(path, tagsOut, rei):
     conn = rei.getRsComm()
     f = iRodsOpen(rei.getRsComm(), path.parseForStr(), 'w')
     avus = f.getUserMetadata()
-    print avus
+    print 'msiAVUs2BisqueTags', avus
     for avu in avus:
         (a, v, u) = avu
         tag = '<tag name="%s" value="%s">' % (a, v)
         tags += tag
 #    tags += '\''
-    print tags
+    print 'msiAVUs2BisqueTags', tags
     irods.fillStrInMsParam(tagsOut,  str(tags))
 
 def msiLeica2Cellomics(inputColl, outputColl, resStr, rei):
