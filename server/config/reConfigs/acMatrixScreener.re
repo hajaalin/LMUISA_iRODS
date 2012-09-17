@@ -10,13 +10,9 @@
 acSetMatrixScreenerPlateData(*obj,*res) {
     acLog("acSetMatrixScreenerPlateData: "++*obj);
     
-    # get the object path
-    msiGetObjectPath(*obj,*path,*status);
-    #acLog(*path);
-    
     msiPyInitialize;
-    msiLocalPython2("/opt/iRODS/iRODS_3.1/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerProject","noRecursionTest",*path,*project);
-    msiLocalPython2("/opt/iRODS/iRODS_3.1/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerExperiment","noRecursionTest",*path,*experiment);
+    msiLocalPython2("/opt/iRODS/iRODS_3.1/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerProject","noRecursionTest",*obj,*project);
+    msiLocalPython2("/opt/iRODS/iRODS_3.1/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerExperiment","noRecursionTest",*obj,*experiment);
     msiLocalPython2("/opt/iRODS/iRODS_3.1/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerWell","noRecursionTest",*obj,*well);
     msiLocalPython2("/opt/iRODS/iRODS_3.1/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerField","noRecursionTest",*obj,*field);
     msiPyFinalize;
