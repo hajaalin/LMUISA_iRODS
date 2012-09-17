@@ -130,6 +130,7 @@ def msiGetMatrixScreenerField(image, resStr,  rei):
 
 def msiAVUs2BisqueTags(path, tagsOut, rei):
 #    tags = '\''
+    tags = ''
     conn = rei.getRsComm()
     f = iRodsOpen(rei.getRsComm(), path.parseForStr(), 'w')
     avus = f.getUserMetadata()

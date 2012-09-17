@@ -257,10 +257,8 @@ acPostProcForPut {
     
     if ($objPath like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}/.\*tif")  {
         acSetMatrixScreenerPlateData($objPath,*res);
-
-        # get real AVUs of the object, make into XML
-        acAVUs2BisqueTags($objPath,*tags)
     }
+
 
     #if($rescName == "li1-tike1") {
         #acLog("acPostProcForPut: li1-tike1");
@@ -285,7 +283,10 @@ acPostProcForPut {
     
     if($userNameClient != "bisque" && $objPath like "/"++$rodsZoneProxy++"/home/\*/bisque_data/\*") {
         acLog("BISQUE: inserting object "++$objPath);
+        # get real AVUs of the object, make into XML
+        acAVUs2BisqueTags($objPath,*tags)
         acLog("BISQUE: tags "++*tags);
+        
         *args = "'"++$objPath++" "++$userNameClient++" "++*tags++"'";
         acLog("BISQUE: args "++*args);
         
