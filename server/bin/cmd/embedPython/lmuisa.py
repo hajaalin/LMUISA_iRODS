@@ -129,7 +129,7 @@ def msiGetMatrixScreenerField(image, resStr,  rei):
     irods.fillStrInMsParam(resStr,  str(res))
 
 def msiAVUs2BisqueTags(path, tagsOut, rei):
-    tags = '"'
+    tags = '\''
     conn = rei.getRsComm()
     f = iRodsOpen(rei.getRsComm(), path.parseForStr(), 'w')
     avus = f.getUserMetadata()
@@ -138,7 +138,7 @@ def msiAVUs2BisqueTags(path, tagsOut, rei):
         (a, v, u) = avu
         tag = '<tag name="%s" value="%s">' % (a, v)
         tags += tag
-    tags += '"'
+    tags += '\''
     print tags
     irods.fillStrInMsParam(tagsOut,  str(tags))
 
