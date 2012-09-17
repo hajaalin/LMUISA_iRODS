@@ -111,7 +111,7 @@ def msiGetMatrixScreenerProject(image, resStr,  rei):
     print 'msiGetMatrixScreenerProject',  res
     irods.fillStrInMsParam(resStr,  str(res))
 
-def msiGetMatrixScreenerProject(image, resStr,  rei):
+def msiGetMatrixScreenerExperiment(image, resStr,  rei):
     res = ''
     image = image.parseForStr()
     res += createExperiment(image)
