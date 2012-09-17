@@ -287,7 +287,8 @@ acPostProcForPut {
         acAVUs2BisqueTags($objPath,*tags)
         acLog("BISQUE: tags "++*tags);
         
-        *args = "'"++$objPath++" "++$userNameClient++" "++*tags++"'";
+        #*args = "'"++$objPath++" "++$userNameClient++" "++*tags++"'";
+        *args = $objPath++" "++$userNameClient++" \'"++*tags++"\'";
         acLog("BISQUE: args "++*args);
         
 	#       delay("<PLUSET>1s</PLUSET><EF>1s REPEAT UNTIL SUCCESS</EF>") {
