@@ -62,6 +62,18 @@ acModPhysPermColl(*Coll,*Resc,*status) {
     acLog("acModPhysPermColl: Done");
 }
 
+acBase64Encode(*in, *out) {
+    acLog("acBase64Encode: "++*in);
+    msiPyInitialize;
+    msiLocalPython2("/opt/iRODS/iRODS_3.1/server/bin/cmd/embedPython/lmuisa.py","msiBase64Encode","noRecursionTest",*in,*out);
+    msiPyFinalize;
+}
+acUrlEncode(*param, *value, *out) {
+    acLog("acUrlEncode: "++*param++" "++*value);
+    msiPyInitialize;
+    msiLocalPython3("/opt/iRODS/iRODS_3.1/server/bin/cmd/embedPython/lmuisa.py","msiUrlEncode","noRecursionTest",*param, *value,*out);
+    msiPyFinalize;
+}
 
 acEcho(*in,*out) {
     msiExecCmd("echo.sh",*in,"null","null","null",*execCmdOut);

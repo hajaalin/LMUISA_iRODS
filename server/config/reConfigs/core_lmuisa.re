@@ -288,20 +288,49 @@ acPostProcForPut {
         acLog("BISQUE: tags "++*tags);
         
         #*args = "'"++$objPath++" "++$userNameClient++" "++*tags++"'";
-        *args = $objPath++" "++$userNameClient++" \'"++*tags++"\'";
+        *args = '$objPath $userNameClient \'*tags\'';
+        #*args = $objPath++" "++$userNameClient++" "++*tags;
+        #*args = "'"++*args++"'"
+        #*args = str(*args)
         acLog("BISQUE: args "++*args);
         
-	#       delay("<PLUSET>1s</PLUSET><EF>1s REPEAT UNTIL SUCCESS</EF>") {
-        delay("<PLUSET>1s</PLUSET>") {
-            #msiExecCmd("insert2bisque.py", '\"$objPath\" $userNameClient', "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
-            #acLog("BISQUE: "++'$objPath $userNameClient *tags');
-            #acLog("BISQUE: "++'*args');
-            #msiExecCmd("insert2bisque_with_tags.py", '$objPath $userNameClient *tags', "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
-            msiExecCmd("insert2bisque_with_tags.py", *args, "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
-            writeLine("serverLog","BISQUE: inserted object"++$objPath);
-	}
+        acInsert2Bisque($objPath,$userNameClient);
+        
+        #msiExecCmd("insert2bisque_with_tags.py", *args, "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
+        
+        #delay("<PLUSET>1s</PLUSET>") {
+            #msiExecCmd("insert2bisque_with_tags.py", *args, "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
+            #writeLine("serverLog","BISQUE: inserted object"++$objPath);
+        #}
     }
-   
+    
+    acLog("acPostProcForPut: Done "++$objPath);	
+}
+
+acInsert2Bisque(*obj, *user) {
+    acLog("acInsert2Bisque: *obj *user");
+    *BISQUE_HOST='http://lmu-omero1.biocenter.helsinki.fi:8000';
+    *BISQUE_ADMIN_PASS='admin';
+    *IRODS_HOST='irods://lmu-omero1.biocenter.helsinki.fi';
+    *logfile = '/tmp/acInsert2Bisque.log';
+  
+    acAVUs2BisqueTags(*obj,*tags);
+  
+    #acBase64Encode("admin:*BISQUE_ADMIN_PASS",*auth);
+    *auth = "admin:*BISQUE_ADMIN_PASS";
+    acUrlEncode("url",*IRODS_HOST++*obj,*p_url);
+    acUrlEncode("user",*user,*p_user);
+    acUrlEncode("tags",*tags,*p_tags);
+
+    *url = *BISQUE_HOST++"/import/insert";
+    *data= *p_url++"&"++*p_user++"&"++*p_tags;
+    
+    *url = "*url?*data";
+    acLog("acInsert2Bisque: url: *url");
+    acLog("acInsert2Bisque: data: *data");
+    
+    msiUrlOpen(*url, *data, *auth, *logfile);
+    acLog("acInsert2Bisque: inserted *obj *user");
 }
 
 #acPostProcForPut { }

@@ -5,3 +5,4 @@
 {"msiWriteOpenDisallowed",					0,		(funcPtr) msiWriteOpenDisallowed},
 {"msiStrReplace",					5,		(funcPtr) msiStrReplace},
 {"msiSystemToHumanTime",					2,		(funcPtr) msiSystemToHumanTime},
+{"msiUrlOpen",					4,		(funcPtr) msiUrlOpen},

@@ -31,3 +31,5 @@ acAVUs2BisqueTags(*obj,*tags) {
     msiLocalPython2("/opt/iRODS/iRODS_3.1/server/bin/cmd/embedPython/lmuisa.py","msiAVUs2BisqueTags","noRecursionTest",*obj,*tags);
     msiPyFinalize;
 }
+
+acCreateBisqueInserUrl() {}

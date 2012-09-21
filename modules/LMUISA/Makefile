@@ -32,9 +32,9 @@ MSIncDir =	$(modulesDir)/LMUISA/microservices/include
 #
 # Source files
 #
-OBJECTS = $(MSObjDir)/HCSInfoMS.o
+OBJECTS = $(MSObjDir)/HCSInfoMS.o $(MSObjDir)/URL.o 
 
-INCLUDE_FLAGS =	-I$(MSIncDir)
+INCLUDE_FLAGS =	-I$(MSIncDir) 
 
 
 
