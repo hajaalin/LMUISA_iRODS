@@ -1,8 +1,0 @@
-// LMUISA module microservices
-// Service name				# args		Service function
-{"msiIsReadyHcsColl",					3,		(funcPtr) msiIsReadyHcsColl},
-{"msiIsReadyHcsCollRandom",					3,		(funcPtr) msiIsReadyHcsCollRandom},
-{"msiWriteOpenDisallowed",					0,		(funcPtr) msiWriteOpenDisallowed},
-{"msiStrReplace",					5,		(funcPtr) msiStrReplace},
-{"msiSystemToHumanTime",					2,		(funcPtr) msiSystemToHumanTime},
-{"msiUrlOpen",					4,		(funcPtr) msiUrlOpen},

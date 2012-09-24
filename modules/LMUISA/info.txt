@@ -1,8 +1,0 @@
-Name:		LMUISA
-Brief:		Microservices for LMUISA.
-Description:	Microservices for Light Microscopy Unit Image Storage and Analysis tasks.
-Dependencies:	
-Enabled:	yes
-Creator:	Harri Jäälinoja, University of Helsinki
-Created:	July 2011
-License:	BSD
