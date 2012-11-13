@@ -97,6 +97,9 @@ acGetUserByDN(*arg,*OUT) { }
 # strict or not for all users:
 acAclPolicy { }
 #acAclPolicy {msiAclPolicy("STRICT"); }
+
+acTicketPolicy{}
+
 #
 # --------------------------------------------------------------------------
 # The following are rules for data object operation
@@ -139,6 +142,7 @@ acAclPolicy { }
 # acSetRescSchemeForCreate {msiSetDefaultResc("demoResc7%demoResc8","preferred"); }
 # acSetRescSchemeForCreate {ON($objPath like "/tempZone/home/rods/protected/*") {msiOprDisallowed;} }
 acSetRescSchemeForCreate {msiSetDefaultResc("li1-tike1","null"); } # LMUISA
+acSetRescSchemeForRepl {msiSetDefaultResc("li1-tike2","null"); } # LMUISA
 # acSetRescSchemeForCreate {msiGetSessionVarValue("all","all"); msiSetDefaultResc("demoResc","null"); }
 # acSetRescSchemeForCreate {msiSetDefaultResc("demoResc","forced"); msiSetRescSortScheme("random"); msiSetRescSortScheme("byRescClass"); }
 #
@@ -245,12 +249,21 @@ acSetMultiReplPerResc { }
 # http://groups.google.com/group/irod-chat/browse_thread/thread/ad039bc078b85aad/77bf952cbb4b4fa7?lnk=gst&q=access+time#77bf952cbb4b4fa7
 # msiSysMetaModify(expirytime,+0h)
 acPostProcForPut {
-    msiSysMetaModify("expirytime","+0h");
+    acLog("acPostProcForPut: "++$objPath);	
+    #msiSysMetaModify("expirytime","+0h");
     
-    if($rescName == "li1-tike1") {
-        #acLog("acPostProcForPut: li1-tike1");
-        acModPhysPerm($filePath);
+    # default tags for testing
+    #*tags = '<tag name="description" value="some text">';
+    
+    if ($objPath like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}/.\*")  {
+        acSetMatrixScreenerPlateData($objPath,*res);
     }
+
+
+    #if($rescName == "li1-tike1") {
+        #acLog("acPostProcForPut: li1-tike1");
+        #acModPhysPerm($filePath);
+    #}
     
     if($objPath like ("/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Data/\*")) {
         #acLog("acPostProcForPut: Data");
@@ -266,13 +279,65 @@ acPostProcForPut {
             msiSysChksumDataObj();
             msiSysReplDataObj('li1-tike2','null'); 
         }
-    }    
+    } 
+    
+    if($userNameClient != "bisque" && $objPath like "/"++$rodsZoneProxy++"/home/\*/bisque_data/\*") {
+        acLog("BISQUE: inserting object "++$objPath);
+        # get real AVUs of the object, make into XML
+        acAVUs2BisqueTags($objPath,*tags)
+        acLog("BISQUE: tags "++*tags);
+        
+        #*args = "'"++$objPath++" "++$userNameClient++" "++*tags++"'";
+        *args = '$objPath $userNameClient \'*tags\'';
+        #*args = $objPath++" "++$userNameClient++" "++*tags;
+        #*args = "'"++*args++"'"
+        #*args = str(*args)
+        acLog("BISQUE: args "++*args);
+        
+        acInsert2Bisque($objPath,$userNameClient);
+        
+        #msiExecCmd("insert2bisque_with_tags.py", *args, "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
+        
+        #delay("<PLUSET>1s</PLUSET>") {
+            #msiExecCmd("insert2bisque_with_tags.py", *args, "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
+            #writeLine("serverLog","BISQUE: inserted object"++$objPath);
+        #}
+    }
+    
+    acLog("acPostProcForPut: Done "++$objPath);	
+}
+
+acInsert2Bisque(*obj, *user) {
+    acLog("acInsert2Bisque: *obj *user");
+    *BISQUE_HOST='http://lmu-omero1.biocenter.helsinki.fi:8000';
+    *BISQUE_ADMIN_PASS='admin';
+    *IRODS_HOST='irods://lmu-omero1.biocenter.helsinki.fi';
+    *logfile = '/tmp/acInsert2Bisque.log';
+  
+    acAVUs2BisqueTags(*obj,*tags);
+  
+    #acBase64Encode("admin:*BISQUE_ADMIN_PASS",*auth);
+    *auth = "admin:*BISQUE_ADMIN_PASS";
+    acUrlEncode("url",*IRODS_HOST++*obj,*p_url);
+    acUrlEncode("user",*user,*p_user);
+    acUrlEncode("tags",*tags,*p_tags);
+
+    *url = *BISQUE_HOST++"/import/insert";
+    *data= *p_url++"&"++*p_user++"&"++*p_tags;
+    
+    *url = "*url?*data";
+    acLog("acInsert2Bisque: url: *url");
+    acLog("acInsert2Bisque: data: *data");
+    
+    msiUrlOpen(*url, *data, *auth, *logfile);
+    acLog("acInsert2Bisque: inserted *obj *user");
 }
 
 #acPostProcForPut { }
 
 acPostProcForCopy {
-    msiSysMetaModify("expirytime","+0h");
+    acLog("acPostProcForCopy: "++$objPath);
+    # msiSysMetaModify("expirytime","+0h");
     if($rescName == "li1-tike1") {
         acModPhysPerm($filePath);}
 }
@@ -282,13 +347,16 @@ acPostProcForCopy {
 acPostProcForFilePathReg {    
     if($rescName == "li1-tike1") {
         acLog("acPostProcForFilePathReg: li1-tike1");
-        msiSysMetaModify("expirytime","+0h");
+        # msiSysMetaModify("expirytime","+0h");
         acModPhysPerm($filePath);
     } }
     
 acPostProcForCreate { }
 
-acPostProcForOpen { msiSysMetaModify("expirytime","+0h");}
+acPostProcForOpen { 
+    acLog("acPostProcForOpen: "++$objPath); 
+    # msiSysMetaModify("expirytime","+0h");
+}
 acPostProcForOpen { }
 acPostProcForPhymv { }
 
@@ -444,16 +512,15 @@ acPreprocForCollCreate { }
 # 19) acPostProcForCollCreate - This rule set the post-processing policy for
 # creating a collection.  Currently there is no function written specifically
 # for this rule.
-acPostProcForCollCreate { # LMUISA
-    if (($collName like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}")
-    && ($collName not like ("/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Trash/\*"))) {
-        acLog("Created Leica MatrixScreener data collection "++$collName);
-        #acCreateTrackerForLeicaColl($collName);
-    }
-    if($collName like "\*testForReLoop") {
-        acCreateLoop($collName);
-    }
-}
+#acPostProcForCollCreate { # LMUISA
+#    if (($collName like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}")
+#    && ($collName not like ("/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Trash/\*"))) {
+#        acLog("Created Leica MatrixScreener data collection "++$collName);
+#        acCreateTrackerForLeicaColl($collName);}
+#    if($collName like "\*testForReLoop") {
+#        acCreateLoop($collName);
+#    }
+#}
 
 acCreateLoop(*coll) {
     acLog("acCreateLoop "++*coll++" ...");

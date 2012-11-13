@@ -1,3 +1,5 @@
+import base64
+import urllib
 import irods, re
 from irods import *
 from irods_error import *
@@ -14,6 +16,10 @@ def testH2(inStr, resStr, rei):
     print res
     irods.fillStrInMsParam(resStr, res)
 
+TAG_DATASET = 'dataset'
+TAG_WELL = 'well'
+TAG_FIELD = 'field'
+
 row_map = {'00':'A','01':'B', '02':'C', '03':'D', '04':'E', '05':'F', '06':'G', '07':'H'  }
 
 col_idx_well = 'U'
@@ -21,6 +27,8 @@ row_idx_well = 'V'
 col_idx_field = 'X'
 row_idx_field = 'Y'
 
+# the regexp that defines the experiment
+prog_experiment = re.compile('experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}')
 # the regexp that defines the well
 prog_well = re.compile(col_idx_well + '([0-9]+)' + '--' + row_idx_well + '([0-9]+)')
 # the regexp that defines the field
@@ -32,6 +40,17 @@ def findBasename(path):
     dirs = path.split('/')
     base = dirs[len(dirs)-1]
     return base
+
+def createProject(image):
+    experiment = createExperiment(image)
+    dirs = image.split('/')
+    for i in range(0, len(dirs)-1):
+        if dirs[i] == experiment:
+            return dirs[i-1]
+    
+def createExperiment(image):
+    result = prog_experiment.search(image)
+    return result.group(0)
     
 def createPlateCode(path):
     base = findBasename(path)
@@ -75,12 +94,74 @@ def createFieldCode(xmax, ymax, field):
     field_new = repr(field_new).zfill(2)
     return field_new
 
+def createFieldIndex(image):
+    result_f = prog_field.search(image)
+    x = result_f.group(1)
+    y = result_f.group(2)
+    return x + ',' + y
+    
 def createChannelCode(image):
     result_c = prog_c.search(image)
     channel = result_c.group(1)
     channel = int(channel)
     return repr(channel)
 
+def msiGetMatrixScreenerProject(image, resStr,  rei):
+    res = ''
+    image = image.parseForStr()
+    res += createProject(image)
+    print 'msiGetMatrixScreenerProject',  res
+    irods.fillStrInMsParam(resStr,  str(res))
+
+def msiGetMatrixScreenerExperiment(image, resStr,  rei):
+    res = ''
+    image = image.parseForStr()
+    res += createExperiment(image)
+    print 'msiGetMatrixScreenerProject',  res
+    irods.fillStrInMsParam(resStr,  str(res))
+
+def msiGetMatrixScreenerWell(image, resStr,  rei):
+    res = ''
+    image = image.parseForStr()
+    res += createWellCode(image)
+    print 'msiGetMatrixScreenerWell',  res
+    irods.fillStrInMsParam(resStr,  str(res))
+
+def msiGetMatrixScreenerField(image, resStr,  rei):
+    res = ''
+    image = image.parseForStr()
+    res += createFieldIndex(image)
+    print 'msiGetMatrixScreenerField',  res
+    irods.fillStrInMsParam(resStr,  str(res))
+
+def msiBase64Encode(inStr, outStr,  rei):
+    input = inStr.parseForStr()
+    output = base64.encodestring(input).strip()
+    irods.fillStrInMsParam(outStr,  str(output))
+
+def msiUrlEncode(inParam, inValue, outStr,  rei):
+    param = inParam.parseForStr()
+    value = inValue.parseForStr()
+    output = urllib.urlencode( { param: value })
+    irods.fillStrInMsParam(outStr,  str(output))
+
+
+def msiAVUs2BisqueTags(path, tagsOut, rei):
+#    tags = '\''
+    tags = '<resource>'
+    conn = rei.getRsComm()
+    f = iRodsOpen(rei.getRsComm(), path.parseForStr(), 'w')
+    avus = f.getUserMetadata()
+    f.close()
+    print 'msiAVUs2BisqueTags', avus
+    for avu in avus:
+        (a, v, u) = avu
+        #tag = '<tag name="%s" value="%s"/>' % (a, v)
+        tag = '<tag name=\"%s\" value=\"%s\"/>' % (a, v)
+        tags += tag
+    tags += '</resource>'
+    print 'msiAVUs2BisqueTags', tags
+    irods.fillStrInMsParam(tagsOut,  str(tags))
 
 def msiLeica2Cellomics(inputColl, outputColl, resStr, rei):
     res = ''
@@ -267,3 +348,16 @@ def msiIsReadyHcsColl(inStr, resStr, rei):
     irods.fillStrInMsParam(resStr, res)
     print 'msiIsReadyHcsColl: exiting'
 
+
+
+#testname = '/LMUISA1_test/home/hajaalin/Data/Bisque/DrosophilaXYZ/experiment--2012_01_13_14_44_19/slide--S00/chamber--U08--V07/field--X01--Y01/image--L0000--S00--U08--V07--J13--E00--O00--X01--Y01--T0000--Z06--C01.ome.tif'
+#print createProject(testname)
+#print createExperiment(testname)
+#print createWellCode(testname)
+#print createFieldIndex(testname)
+
+#avus = [('dataset', 'experiment--2011_04_20_07_15_22', ''), ('well', 'B01', ''), ('field', '00,00', ''), ('project', 'experiment--2011_04_20_07_15_22', '')]
+#for avu in avus:
+ #   (a, v, u) = avu
+  #  tag = '<tag name="%s" value="%s">' % (a, v)
+   # print tag
