@@ -11,10 +11,10 @@ acSetMatrixScreenerPlateData(*obj,*res) {
     acLog("acSetMatrixScreenerPlateData: "++*obj);
     
     msiPyInitialize;
-    msiLocalPython2("/opt/iRODS/iRODS_3.1/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerProject","noRecursionTest",*obj,*project);
-    msiLocalPython2("/opt/iRODS/iRODS_3.1/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerExperiment","noRecursionTest",*obj,*experiment);
-    msiLocalPython2("/opt/iRODS/iRODS_3.1/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerWell","noRecursionTest",*obj,*well);
-    msiLocalPython2("/opt/iRODS/iRODS_3.1/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerField","noRecursionTest",*obj,*field);
+    msiLocalPython2("/opt/iRODS/iRODS_3.2/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerProject","noRecursionTest",*obj,*project);
+    msiLocalPython2("/opt/iRODS/iRODS_3.2/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerExperiment","noRecursionTest",*obj,*experiment);
+    msiLocalPython2("/opt/iRODS/iRODS_3.2/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerWell","noRecursionTest",*obj,*well);
+    msiLocalPython2("/opt/iRODS/iRODS_3.2/server/bin/cmd/embedPython/lmuisa.py","msiGetMatrixScreenerField","noRecursionTest",*obj,*field);
     msiPyFinalize;
     
     msiAddKeyVal(*KVPairs,'project',*project);
@@ -25,11 +25,22 @@ acSetMatrixScreenerPlateData(*obj,*res) {
    msiAssociateKeyValuePairsToObj(*KVPairs,*obj,"-d");
 }
 
-acAVUs2BisqueTags(*obj,*tags) {
+acAVUs2BisqueTags_OLD(*obj,*tags) {
     acLog("acAVUs2BisqueTags: "++*obj);
     msiPyInitialize;
-    msiLocalPython2("/opt/iRODS/iRODS_3.1/server/bin/cmd/embedPython/lmuisa.py","msiAVUs2BisqueTags","noRecursionTest",*obj,*tags);
+    msiLocalPython2("/opt/iRODS/iRODS_3.2/server/bin/cmd/embedPython/lmuisa.py","msiAVUs2BisqueTags","noRecursionTest",*obj,*tags);
     msiPyFinalize;
 }
+
+acAVUs2BisqueTags(*obj,*bisquetags) {
+    acLog("acAVUs2BisqueTags: "++*obj);
+    msiGetDataObjAVUs(*obj,*outBuf);
+    msiBytesBuf2Str(*outBuf, *avuxml);
+    msiPyInitialize;
+    msiLocalPython2("/opt/iRODS/iRODS_3.2/server/bin/cmd/embedPython/lmuisa.py","msiAVUs2BisqueTags","noRecursionTest",*avuxml,*bisquetags);
+    msiPyFinalize;
+}
+
+
 
 acCreateBisqueInserUrl() {}

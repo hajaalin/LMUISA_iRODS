@@ -1,6 +1,7 @@
 import base64
 import urllib
 import irods, re
+import libxml2,  libxslt
 from irods import *
 from irods_error import *
 
@@ -35,6 +36,29 @@ prog_well = re.compile(col_idx_well + '([0-9]+)' + '--' + row_idx_well + '([0-9]
 prog_field = re.compile(col_idx_field + '([0-9]+)' + '--' + row_idx_field + '([0-9]+)')
 # the regexp that defines the channel
 prog_c = re.compile('C([0-9]+).ome.tif')
+
+AVUs2BisqueTagsXSL = '''<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0"
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:template match="metadata">
+<resource> 
+<xsl:for-each select="AVU">
+<tag>
+<xsl:attribute name="name">
+<xsl:value-of select="attribute"/>
+</xsl:attribute>
+<xsl:attribute name="value">
+<xsl:value-of select="value"/>
+</xsl:attribute>
+</tag>
+</xsl:for-each>
+</resource>
+</xsl:template>
+</xsl:stylesheet>
+'''
+
+AVUs2BisqueTagsStyleDoc = libxml2.parseDoc(AVUs2BisqueTagsXSL)
+AVUs2BisqueTagsStyle = libxslt.parseStylesheetDoc(AVUs2BisqueTagsStyleDoc)
 
 def findBasename(path):
     dirs = path.split('/')
@@ -117,7 +141,7 @@ def msiGetMatrixScreenerExperiment(image, resStr,  rei):
     res = ''
     image = image.parseForStr()
     res += createExperiment(image)
-    print 'msiGetMatrixScreenerProject',  res
+    print 'msiGetMatrixScreenerExperiment',  res
     irods.fillStrInMsParam(resStr,  str(res))
 
 def msiGetMatrixScreenerWell(image, resStr,  rei):
@@ -145,8 +169,33 @@ def msiUrlEncode(inParam, inValue, outStr,  rei):
     output = urllib.urlencode( { param: value })
     irods.fillStrInMsParam(outStr,  str(output))
 
+def msiXSLTransform(inxml,  xsl, outxml,  rei):
+    inxml = inxml.parseForStr()
+    xsl = xsl.parseForStr()
+    print 'msiXSLTransform: inxml',  inxml
+    print 'msiXSLTransform: xsl',  xsl
 
-def msiAVUs2BisqueTags(path, tagsOut, rei):
+    doc = libxml2.parseDoc(inxml)
+    styledoc = libxml2.parseDoc(xsl)
+    
+    style = libxslt.parseStylesheetDoc(styledoc)
+    
+    result = style.applyStylesheet(doc, None)
+    result = str(result)
+    print 'msiXSLTransform: result',  result
+    irods.fillStrInMsParam(outxml,  result)
+
+def msiAVUs2BisqueTags(avuXml, bisqueTags, rei):
+    avuXml = avuXml.parseForStr()
+    print "msiAVUs2BisqueTags: avuXml:\n",  avuXml
+    indoc = libxml2.parseDoc(avuXml)
+    outdoc = AVUs2BisqueTagsStyle.applyStylesheet(indoc,  None)
+    print "msiAVUs2BisqueTags: outdoc:\n",  outdoc
+    outdoc = str(outdoc)
+    print "msiAVUs2BisqueTags: outdoc:\n",  outdoc
+    irods.fillStrInMsParam(bisqueTags,  outdoc)
+
+def msiAVUs2BisqueTags_OLD(path, tagsOut, rei):
 #    tags = '\''
     tags = '<resource>'
     conn = rei.getRsComm()
