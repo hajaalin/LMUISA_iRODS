@@ -1,0 +1,9 @@
+[submodule "modules/htjUtils"]
+	path = modules/htjUtils
+	url = git://github.com/hajaalin/modules-htjUtils.git
+[submodule "modules/LMUISA"]
+	path = modules/LMUISA
+	url = git://github.com/hajaalin/modules-LMUISA.git
+[submodule "modules/Bisque"]
+	path = modules/Bisque
+	url = git://github.com/hajaalin/modules-Bisque.git
