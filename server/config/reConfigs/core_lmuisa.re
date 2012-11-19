@@ -255,7 +255,8 @@ acPostProcForPut {
     # default tags for testing
     #*tags = '<tag name="description" value="some text">';
     
-    if ($objPath like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}/.\*")  {
+    # add plate/well/field metadata to MatrixScreener images
+    if ($objPath like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}/.\*.ome.tif")  {
         acSetMatrixScreenerPlateData($objPath,*res);
     }
 
@@ -329,7 +330,7 @@ acInsert2Bisque(*obj, *user) {
     acLog("acInsert2Bisque: url: *url");
     acLog("acInsert2Bisque: data: *data");
     
-    msiUrlOpen(*url, *data, *auth, *logfile);
+    msiBisqueUrlOpen(*url, *data, *auth, *logfile);
     acLog("acInsert2Bisque: inserted *obj *user");
 }
 

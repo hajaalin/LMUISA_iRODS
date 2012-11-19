@@ -90,14 +90,21 @@ acAssociateKeyValuePairsToColl(*KVPairs,*Coll) {
 
 # Checks if a data object in trash is expired
 acTrashExpired(*obj,*expired) {
+    acLog("acTrashExpired: "++*obj);
     msiIsData(*obj,*dataID,*foo);
-    acGetTrashExpiry(*dataID,*trashExpiry);
-    msiGetIcatTime(*icatTime,unix);
-    acLog("acTrashExpired: "++*icatTime++" "++*trashExpiry);
-    if (*icatTime > *trashExpiry ) {
-        *expired = "YES";} 
+    acLog("acTrashExpired: "++*dataID);
+    if (int(*dataID) == 0) {
+        *expired = "NO";
+    }
     else {
-        *expired = "NO";}
+        acGetTrashExpiry(*dataID,*trashExpiry);
+        msiGetIcatTime(*icatTime,"unix");
+        acLog("acTrashExpired: "++*icatTime++" "++*trashExpiry);
+        if (*icatTime > *trashExpiry ) {
+            *expired = "YES";} 
+        else {
+            *expired = "NO";}
+    }
 }
 
 acSetTrashACL(*destObject) {
