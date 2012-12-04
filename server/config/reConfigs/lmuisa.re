@@ -1,22 +1,16 @@
 
 acCreateUserLMUISACollections {
-    acLog("acCreateUserLMUISACollections");
-    acCreateCollByAdmin("/"++$rodsZoneProxy++"/home/"++$otherUserName,"Data");
-    acCreateCollByAdmin("/"++$rodsZoneProxy++"/home/"++$otherUserName,"Conversions");
-    acCreateCollByAdmin("/"++$rodsZoneProxy++"/home/"++$otherUserName,"Results");
-    acCreateCollByAdmin("/"++$rodsZoneProxy++"/home/"++$otherUserName,"Trash");}
+    acLog("acCreateUserLMUISACollections $otherUserName");
+    acCreateCollByAdmin("/"++$rodsZoneProxy++"/home/"++$otherUserName,"bisque_data");
+    acCreateCollByAdmin("/"++$rodsZoneProxy++"/home/"++$otherUserName,"tmp");
+    acCreateCollByAdmin("/"++$rodsZoneProxy++"/home/"++$otherUserName,"trash");
+}
 acDeleteUserLMUISACollections {
-    acLog("acDeleteUserLMUISACollections1");
-    acDeleteCollByAdmin("/"++$rodsZoneProxy++"/home/"++$otherUserName,"Data");
-    acLog("acDeleteUserLMUISACollections2");
-    acDeleteCollByAdmin("/"++$rodsZoneProxy++"/home/"++$otherUserName,"Conversions");
-    acLog("acDeleteUserLMUISACollections3");
-    acDeleteCollByAdmin("/"++$rodsZoneProxy++"/home/"++$otherUserName,"Results");
-    #msiSetACL("default","admin:own",$otherUserName,"/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Trash")
-    #msiSetACL("default","admin:null","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Trash")
-    acLog("acDeleteUserLMUISACollections4");
-    acDeleteCollByAdmin("/"++$rodsZoneProxy++"/home/"++$otherUserName,"Trash");}
-
+    acLog("acDeleteUserLMUISACollections $otherUserName");
+    acDeleteCollByAdmin("/"++$rodsZoneProxy++"/home/"++$otherUserName,"bisque_data");
+    acDeleteCollByAdmin("/"++$rodsZoneProxy++"/home/"++$otherUserName,"tmp");
+    acDeleteCollByAdmin("/"++$rodsZoneProxy++"/home/"++$otherUserName,"trash");
+}
 acSetAclForLMUISACollections {
     acLog("acSetAclForLMUISACollections");
     if ($otherUserName != "lmu-staff" && $otherUserName != "lmu-instruments") then {
@@ -28,32 +22,29 @@ acSetAclForLMUISACollections {
     
 acSetAclForData {
     acLog("acSetACLForData");
-    # staff can read files in user's Data
-    msiSetACL("recursive","admin:inherit","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Data");
-    msiSetACL("default","admin:read","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Data");
-    # instrument accounts can write to user's Data
-    msiSetACL("recursive","admin:inherit","lmu-instruments","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Data");
-    msiSetACL("default","admin:write","lmu-instruments","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Data");    
-    msiSetACL("default","admin:read","lmu-instruments","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Data");    
-    # staff can read files in user's Conversions
-    msiSetACL("recursive","admin:inherit","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Conversions");
-    msiSetACL("default","admin:read","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Conversions");
-    # staff can write to user's Results folder
-    msiSetACL("recursive","admin:inherit","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Results");
-    msiSetACL("default","admin:write","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Results");
-    # the user can read everythins in Results (also files created by staff)
-    msiSetACL("recursive","admin:inherit",$otherUserName,"/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Results");
-    msiSetACL("default","admin:read",$otherUserName,"/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Results");
+    # staff can read files in user's home collection
+    msiSetACL("recursive","admin:inherit","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName);
+    msiSetACL("default","admin:read","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName);
+    # instrument accounts can write to user's home collection (maybe needed for batch upload of data from instrument PCs)
+    msiSetACL("recursive","admin:inherit","lmu-instruments","/"++$rodsZoneProxy++"/home/"++$otherUserName);
+    msiSetACL("default","admin:write","lmu-instruments","/"++$rodsZoneProxy++"/home/"++$otherUserName);    
+    msiSetACL("default","admin:read","lmu-instruments","/"++$rodsZoneProxy++"/home/"++$otherUserName);    
+    # staff can write to user's tmp folder
+    msiSetACL("recursive","admin:inherit","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/tmp");
+    msiSetACL("default","admin:write","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/tmp");
+    # the user can read everything in tmp (also files created by staff)
+    msiSetACL("recursive","admin:inherit",$otherUserName,"/"++$rodsZoneProxy++"/home/"++$otherUserName++"/tmp");
+    msiSetACL("default","admin:read",$otherUserName,"/"++$rodsZoneProxy++"/home/"++$otherUserName++"/tmp");
 }
-acSetStaffAclForTrash{
-    acLog("acSetStaffACLForTrash");
-    msiSetACL("recursive","admin:inherit","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Trash"):::acLog("fail1");
-    msiSetACL("default","admin:own","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Trash"):::acLog("fail2");}
-acSetUserAclForTrash{
-    acLog("acSetUserACLForTrash");
-    msiSetACL("recursive","admin:inherit",$otherUserName,"/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Trash");
-    msiSetACL("default","admin:write",$otherUserName,"/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Trash");
-    msiSetACL("default","admin:read",$otherUserName,"/"++$rodsZoneProxy++"/home/"++$otherUserName++"/Trash");}
+#acSetStaffAclForTrash{
+    #acLog("acSetStaffACLForTrash");
+    #msiSetACL("recursive","admin:inherit","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/trash"):::acLog("fail1");
+    #msiSetACL("default","admin:own","lmu-staff","/"++$rodsZoneProxy++"/home/"++$otherUserName++"/trash"):::acLog("fail2");}
+#acSetUserAclForTrash{
+    #acLog("acSetUserACLForTrash");
+    #msiSetACL("recursive","admin:inherit",$otherUserName,"/"++$rodsZoneProxy++"/home/"++$otherUserName++"/trash");
+    #msiSetACL("default","admin:write",$otherUserName,"/"++$rodsZoneProxy++"/home/"++$otherUserName++"/trash");
+    #msiSetACL("default","admin:read",$otherUserName,"/"++$rodsZoneProxy++"/home/"++$otherUserName++"/trash");}
     
 
 

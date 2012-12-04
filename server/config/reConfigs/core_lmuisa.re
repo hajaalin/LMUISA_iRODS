@@ -30,7 +30,7 @@ acCreateDefaultCollections {
     acSetAclForLMUISACollections; }  # LMUISA
 acCreateUserZoneCollections { 
   acCreateCollByAdmin("/"++$rodsZoneProxy++"/home", $otherUserName);
-  acCreateCollByAdmin("/"++$rodsZoneProxy++"/trash/home", $otherUserName); 
+  #acCreateCollByAdmin("/"++$rodsZoneProxy++"/trash/home", $otherUserName); 
 }
 acCreateCollByAdmin(*parColl,*childColl) {
   msiCreateCollByAdmin(*parColl,*childColl); }
@@ -53,14 +53,13 @@ acDeleteDefaultCollections {
   
 acDeleteUserZoneCollections {
   acDeleteCollByAdmin("/"++$rodsZoneProxy++"/home",$otherUserName);
-  acDeleteCollByAdmin("/"++$rodsZoneProxy++"/trash/home",$otherUserName);
- }
+  #acDeleteCollByAdmin("/"++$rodsZoneProxy++"/trash/home",$otherUserName);
+}
 acDeleteCollByAdmin(*parColl,*childColl) {
   msiDeleteCollByAdmin(*parColl,*childColl); }
 
 #
 acRenameLocalZone(*oldZone,*newZone) {
-#  "testisana"
   msiRenameCollection("/"++str(*oldZone)++"",*newZone) ::: msiRollback;
   msiRenameLocalZone(*oldZone,*newZone) ::: msiRollback;
   msiCommit; }
@@ -401,29 +400,26 @@ acSetNumThreads {msiSetNumThreads("default","16","default"); }
 # don't remove this comment
 #acDataDeletePolicy { }
 
-# Disallow deletion from Data. Piste. Have to move (rename) to trash instead.
-acDataDeletePolicy { ON($objPath like ("/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Data/\*")) {
-        cut;
-        acLog("Users are not allowed to delete data from Data.");
-        msiDeleteDisallowed;}}
-        
-acDataDeletePolicy { ON($objPath like ("/"++$rodsZoneProxy++"/home/cellinsight/CellData/\*")) {
-        cut;
-        acLog("Users are not allowed to delete data from ~cellinsight/CellData.");
-        msiDeleteDisallowed;}}
-
-# Data objects in Trash can be removed only after they have expired.
-acDataDeletePolicy { ON($objPath like ("\*/Trash/\*")) {
+# Data objects in trash can be removed only after they have expired.
+acDataDeletePolicy { 
+    ON($objPath like ("\*/trash/\*")) {
         cut;
         acTrashExpired($objPath,*expired);
-        if (*expired == NO ) {
-            acLog("acDataDeletePolicy: Data in Trash not expired: $objPath");
+        if (*expired == "NO" ) {
+            acLog("acDataDeletePolicy: Data in trash not expired: $objPath");
             msiDeleteDisallowed;
         }
-}}
+    }
+}
+
+# Disallow deletion from Data. Piste. Have to move (rename) to trash instead.
+acDataDeletePolicy {         
+    acLog("Users are not allowed to delete data.");
+    msiDeleteDisallowed;
+}
 
 # Log suspicious delete
-acDataDeletePolicy { acLog("acDataDeletePolicy: Suspicious delete "++$objPath++" "++$userNameClient);}
+#acDataDeletePolicy { acLog("acDataDeletePolicy: Suspicious delete "++$objPath++" "++$userNameClient);}
 #
 
 # 11) acPostProcForDelete - This rule set the post-processing policy for 
@@ -523,6 +519,9 @@ acPreprocForCollCreate { }
 #    }
 #}
 
+acPostProcForCollCreate { }
+
+
 acCreateLoop(*coll) {
     acLog("acCreateLoop "++*coll++" ...");
     delay("<PLUSET>20s</PLUSET><EF>60s REPEAT UNTIL SUCCESS</EF>") {
@@ -546,12 +545,17 @@ acPreprocForRmColl {
         acLog("acPreprocForRmColl: Deleting default collections is not allowed: "++$collName);
         #msiDeleteDisallowed;
     }
-    if ($collName == "/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Trash") {
+    if ($collName == "/"++$rodsZoneProxy++"/home/"++$userNameClient++"/trash") {
         cut;
         acLog("acPreprocForRmColl: Deleting default collections is not allowed: "++$collName);
         #msiDeleteDisallowed;
     }
-    if ($collName == "/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Data") {
+    if ($collName == "/"++$rodsZoneProxy++"/home/"++$userNameClient++"/tmp") {
+        cut;
+        acLog("acPreprocForRmColl: Deleting default collections is not allowed: "++$collName);
+        #msiDeleteDisallowed;
+    }
+    if ($collName == "/"++$rodsZoneProxy++"/home/"++$userNameClient++"/bisque_data") {
         cut;
         acLog("acPreprocForRmColl: Deleting default collections is not allowed: "++$collName);
         #msiDeleteDisallowed;
@@ -761,20 +765,11 @@ acPreProcForObjRename(*sourceObject,*destObject){
         cut;msiDeleteDisallowed;}}
 
 acPreProcForObjRename(*sourceObject,*destObject) {
-    
     # this disallows moving data within a Leica folder
     if (*sourceObject like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}/.*")  {
         cut;
         acLog("acPreProcForObjRename: Moving data belonging to a Leica folder is not allowed "++*sourceObject++" "++*destObject);
-        msiDeleteDisallowed;}
-        
-    # this disallows moving data away from Data folder (except to Trash).
-    if(*sourceObject like "/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Data/\*") {
-        if  (!((*destObject like "/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Data/\*") ||
-               (*destObject like "/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Trash/\*"))) {
-            cut;
-            acLog("acPreProcForObjRename: Objects in Data must stay in Data or go in Trash.");
-            msiDeleteDisallowed;}
+        msiDeleteDisallowed;
     }
 }
     
@@ -790,12 +785,9 @@ acPreProcForObjRename(*sourceObject,*destObject) {
 # Adds timestamps to files that go in the trashbin
 #acPostProcForObjRename(*sourceObject,*destObject)|*destObject like /$rodsZoneProxy/trash/*|acSetTrashTimestamps(*destObject)|nop
 acPostProcForObjRename(*sourceObject,*destObject) {
-    ON(*destObject like ("/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Trash/\*")) {
+    ON(*destObject like ("/"++$rodsZoneProxy++"/home/"++$userNameClient++"/trash/\*")) {
         acLog("acPostProcForObjRename:0 *destObject");
         acSetTrashTimestamps(*destObject);
-        acLog("acPostProcForObjRename:1");
-        acSetTrashACL(*destObject);
-        acLog("acPostProcForObjRename:2");
     }
 }
 

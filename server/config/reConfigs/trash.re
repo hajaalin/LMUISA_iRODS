@@ -37,55 +37,45 @@ acSetTrashTimestamps(*destObject) {
     acLog("acSetTrashTimestamps 2 collID "++str(*collID)++" status "++str(*status));
     if (*collID > 0) {
         acLog("acSetTrashTimestamps 3 on collection "++*destObject);
-        acAssociateKeyValuePairsToColl(*KVPairs,*destObject); 
+        acAssociateTrashTimeStampsToColl(*destObject); 
+        #acAssociateKeyValuePairsToColl(*KVPairs,*destObject); 
         acLog("acSetTrashTimestamps 4");}        
     else {
         acLog("acSetTrashTimestamps 5 on dataobj "++*destObject);
-        msiAssociateKeyValuePairsToObj(*KVPairs,*destObject,"-d");
+        msiSetKeyValuePairsToObj(*KVPairs,*destObject,"-d");
         acLog("acSetTrashTimestamps 7");}
 }
 
-acAssociateKeyValuePairsToCollZ(*KVPairs,*Coll) {
-    msiGetValByKey(*KVPairs,"DATA_TRASH_TIME_H",*dataTrashTimeHuman);
-    acLog("acAssociateKeyValuePairsToColl:0 *dataTrashTimeHuman");
-    msiAssociateKeyValuePairsToObj(*KVPairs,*Coll,"-C");
-    acLog("acAssociateKeyValuePairsToColl:0.5 *dataTrashTimeHuman");
- 
+acAssociateTrashTimeStampsToCollFuturistic(*Coll) {
+    foreach(*obj in collection(*Coll)) {
+        acLog("jee");
+    }
+}
+
+acAssociateTrashTimeStampsToColl(*Coll) {
+    acCreateTrashTimestamps(*KVPairs);
+    msiSetKeyValuePairsToObj(*KVPairs,*Coll,"-C");
+
     *Work = ``{
         msiIsData(*Objects,*dataID,*foo);
         if(int(*dataID) > 0) {
-            acLog("acAssociateKeyValuePairsToColl:1");
+            acCreateTrashTimestamps(*KVPairs);
             msiGetObjectPath(*Objects,*objPath,*bar);
-            acLog("acAssociateKeyValuePairsToColl:2 *objPath");
-            msiGetValByKey(*KVPairs,"DATA_TRASH_TIME_H",*dataTrashTimeHuman2);
-            acLog("acAssociateKeyValuePairsToColl:3 *dataTrashTimeHuman2");
-            #msiPrintKeyValPair("stdout", *KVPairs);
-            msiAssociateKeyValuePairsToObj(*KVPairs,*objPath,"-d");
-            acLog("acAssociateKeyValuePairsToColl:4");
+            msiSetKeyValuePairsToObj(*KVPairs,*objPath,"-d");
         }
     }``;
-    *Work2 = ``{
-        acLog("acAssociateKeyValuePairsToColl:5 *Coll");
-        msiCopyAVUMetadata(*Coll,*Objects,*Status);
-    }``; 
     
-    msiCollectionSpider(*Coll,*Objects,*Work2,*status);
-    acLog("acAssociateKeyValuePairsToColl:6 done");
+    msiCollectionSpider(*Coll,*Objects,*Work,*status);
 }
 
 acAssociateKeyValuePairsToColl(*KVPairs,*Coll) {
-   msiGetValByKey(*KVPairs,"DATA_TRASH_TIME_H",*dataTrashTimeHuman);
-   acLog("acAssociateKeyValuePairsToColl:0 *dataTrashTimeHuman");
    msiAssociateKeyValuePairsToObj(*KVPairs,*Coll,"-C");
-   acLog("acAssociateKeyValuePairsToColl:0.5 *dataTrashTimeHuman");
 
    *Work2 = ``{
-       acLog("acAssociateKeyValuePairsToColl:5 ``++"*Coll"++``");
        msiCopyAVUMetadata(``++"'*Coll'"++``,*Objects,*Status);
    }``;
 
    msiCollectionSpider(*Coll,*Objects,*Work2,*status);
-   acLog("acAssociateKeyValuePairsToColl:6 done");
 }
 
 # Checks if a data object in trash is expired
@@ -100,7 +90,7 @@ acTrashExpired(*obj,*expired) {
         acGetTrashExpiry(*dataID,*trashExpiry);
         msiGetIcatTime(*icatTime,"unix");
         acLog("acTrashExpired: "++*icatTime++" "++*trashExpiry);
-        if (*icatTime > *trashExpiry ) {
+        if (int(*icatTime) > int(*trashExpiry) ) {
             *expired = "YES";} 
         else {
             *expired = "NO";}
