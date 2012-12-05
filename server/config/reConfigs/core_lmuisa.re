@@ -140,8 +140,8 @@ acTicketPolicy{}
 # acSetRescSchemeForCreate {msiSetDefaultResc("demoResc","null"); msiSetRescSortScheme("random"); msiSetRescSortScheme("byRescClass"); }
 # acSetRescSchemeForCreate {msiSetDefaultResc("demoResc7%demoResc8","preferred"); }
 # acSetRescSchemeForCreate {ON($objPath like "/tempZone/home/rods/protected/*") {msiOprDisallowed;} }
-acSetRescSchemeForCreate {msiSetDefaultResc("li1-tike1","null"); } # LMUISA
-acSetRescSchemeForRepl {msiSetDefaultResc("li1-tike2","null"); } # LMUISA
+acSetRescSchemeForCreate {msiSetDefaultResc("rg-store1","forced"); } # LMUISA
+acSetRescSchemeForRepl {msiSetDefaultResc("rg-store2","forced"); } # LMUISA
 # acSetRescSchemeForCreate {msiGetSessionVarValue("all","all"); msiSetDefaultResc("demoResc","null"); }
 # acSetRescSchemeForCreate {msiSetDefaultResc("demoResc","forced"); msiSetRescSortScheme("random"); msiSetRescSortScheme("byRescClass"); }
 #
@@ -180,16 +180,7 @@ acSetRescSchemeForRepl {msiSetDefaultResc("li1-tike2","null"); } # LMUISA
 
 # LMUISA
 # Disallow opening files in Data for writing.
-acPreprocForDataObjOpen {
-    ON(($writeFlag == "1") && ($objPath like ("/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Data/*"))) {
-        cut;
-        msiWriteOpenDisallowed;}}
-# Disallow opening files in Trash for writing.
-acPreprocForDataObjOpen {
-    ON(($writeFlag == "1") && ($objPath like ("/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Trash/*"))) {
-        cut;
-        msiWriteOpenDisallowed;}}
-acPreprocForDataObjOpen { }
+acPreprocForDataObjOpen { msiWriteOpenDisallowed; }
 
 # 3) acSetMultiReplPerResc - Preprocess rule for replicating an existing
 # data object. Currently, one preprocessing function can be used 
@@ -251,60 +242,28 @@ acPostProcForPut {
     acLog("acPostProcForPut: "++$objPath);	
     #msiSysMetaModify("expirytime","+0h");
     
-    # default tags for testing
-    #*tags = '<tag name="description" value="some text">';
-    
     # add plate/well/field metadata to MatrixScreener images
     if ($objPath like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}/.\*.ome.tif")  {
-        acSetMatrixScreenerPlateData($objPath,*res);
-    }
-
-
-    #if($rescName == "li1-tike1") {
-        #acLog("acPostProcForPut: li1-tike1");
-        #acModPhysPerm($filePath);
-    #}
-    
-    if($objPath like ("/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Data/\*")) {
-        #acLog("acPostProcForPut: Data");
         delay("<PLUSET>1m</PLUSET>") {
-            msiSysChksumDataObj();
-            msiSysReplDataObj('li1-tike2','null'); 
+            acSetMatrixScreenerPlateData($objPath,*res);
         }
     }
     
-    if($objPath like ("/"++$rodsZoneProxy++"/home/cellinsight/CellData/\*")) {
-        #acLog("acPostProcForPut: CellData");
+    # calculate checksums and replicate everything but files going to ~/tmp
+    if(!($objPath like ("/"++$rodsZoneProxy++"/home/"++$userNameClient++"/tmp/\*")) ){
         delay("<PLUSET>1m</PLUSET>") {
             msiSysChksumDataObj();
-            msiSysReplDataObj('li1-tike2','null'); 
+            msiSysReplDataObj('rg-store2','null'); 
         }
-    } 
-    
+    }
+
+    # import data to Bisque
     if($userNameClient != "bisque" && $objPath like "/"++$rodsZoneProxy++"/home/\*/bisque_data/\*") {
-        acLog("BISQUE: inserting object "++$objPath);
-        # get real AVUs of the object, make into XML
-        acAVUs2BisqueTags($objPath,*tags)
-        acLog("BISQUE: tags "++*tags);
-        
-        #*args = "'"++$objPath++" "++$userNameClient++" "++*tags++"'";
-        *args = '$objPath $userNameClient \'*tags\'';
-        #*args = $objPath++" "++$userNameClient++" "++*tags;
-        #*args = "'"++*args++"'"
-        #*args = str(*args)
-        acLog("BISQUE: args "++*args);
-        
-        acInsert2Bisque($objPath,$userNameClient);
-        
-        #msiExecCmd("insert2bisque_with_tags.py", *args, "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
-        
-        #delay("<PLUSET>1s</PLUSET>") {
-            #msiExecCmd("insert2bisque_with_tags.py", *args, "lmu-omero1.biocenter.helsinki.fi", "null", "null", *cmdOut);
-            #writeLine("serverLog","BISQUE: inserted object"++$objPath);
-        #}
-    }
-    
-    acLog("acPostProcForPut: Done "++$objPath);	
+        delay("<PLUSET>1m</PLUSET>") {
+            acLog("BISQUE: inserting object "++$objPath);
+            acInsert2Bisque($objPath,$userNameClient);
+        }
+    }   
 }
 
 acInsert2Bisque(*obj, *user) {
@@ -314,6 +273,7 @@ acInsert2Bisque(*obj, *user) {
     *IRODS_HOST='irods://lmu-omero1.biocenter.helsinki.fi';
     *logfile = '/tmp/acInsert2Bisque.log';
   
+    # get real AVUs of the object, make into XML
     acAVUs2BisqueTags(*obj,*tags);
   
     #acBase64Encode("admin:*BISQUE_ADMIN_PASS",*auth);
@@ -338,18 +298,13 @@ acInsert2Bisque(*obj, *user) {
 acPostProcForCopy {
     acLog("acPostProcForCopy: "++$objPath);
     # msiSysMetaModify("expirytime","+0h");
-    if($rescName == "li1-tike1") {
-        acModPhysPerm($filePath);}
 }
 #acPostProcForCopy { msiSysMetaModify("expirytime","+0h");}
 #acPostProcForCopy { }
 
 acPostProcForFilePathReg {    
-    if($rescName == "li1-tike1") {
-        acLog("acPostProcForFilePathReg: li1-tike1");
-        # msiSysMetaModify("expirytime","+0h");
-        acModPhysPerm($filePath);
-    } }
+    # msiSysMetaModify("expirytime","+0h");
+}
     
 acPostProcForCreate { }
 
@@ -414,13 +369,8 @@ acDataDeletePolicy {
 
 # Disallow deletion from Data. Piste. Have to move (rename) to trash instead.
 acDataDeletePolicy {         
-    acLog("Users are not allowed to delete data.");
     msiDeleteDisallowed;
 }
-
-# Log suspicious delete
-#acDataDeletePolicy { acLog("acDataDeletePolicy: Suspicious delete "++$objPath++" "++$userNameClient);}
-#
 
 # 11) acPostProcForDelete - This rule set the post-processing policy for 
 # deleting data objects.  Currently there is no function written specifically
