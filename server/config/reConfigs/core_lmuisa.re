@@ -513,7 +513,7 @@ acPreprocForCollCreate { }
 # 19) acPostProcForCollCreate - This rule set the post-processing policy for
 # creating a collection.  Currently there is no function written specifically
 # for this rule.
-#acPostProcForCollCreate { # LMUISA
+acPostProcForCollCreate { # LMUISA
 #    if (($collName like regex ".*/experiment--[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}_[0-9]{2}")
 #    && ($collName not like ("/"++$rodsZoneProxy++"/home/"++$userNameClient++"/Trash/\*"))) {
 #        acLog("Created Leica MatrixScreener data collection "++$collName);
@@ -521,7 +521,7 @@ acPreprocForCollCreate { }
 #    if($collName like "\*testForReLoop") {
 #        acCreateLoop($collName);
 #    }
-#}
+}
 
 acCreateLoop(*coll) {
     acLog("acCreateLoop "++*coll++" ...");
